@@ -1,13 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-test("loads the kanban board", async ({ page }) => {
+const login = async (page) => {
   await page.goto("/");
+  await page.getByLabel("Username").fill("user");
+  await page.getByLabel("Password").fill("password");
+  await page.getByRole("button", { name: /sign in/i }).click();
   await expect(page.getByRole("heading", { name: "Kanban Studio" })).toBeVisible();
+};
+
+test("loads the kanban board", async ({ page }) => {
+  await login(page);
   await expect(page.locator('[data-testid^="column-"]')).toHaveCount(5);
 });
 
 test("adds a card to a column", async ({ page }) => {
-  await page.goto("/");
+  await login(page);
   const firstColumn = page.locator('[data-testid^="column-"]').first();
   await firstColumn.getByRole("button", { name: /add a card/i }).click();
   await firstColumn.getByPlaceholder("Card title").fill("Playwright card");
