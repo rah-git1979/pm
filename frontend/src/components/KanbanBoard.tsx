@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -13,11 +13,24 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
-import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
+import { CardEditModal } from "@/components/CardEditModal";
+import { createId, initialData, moveCard, type BoardData, type Card } from "@/lib/kanban";
+
+const STORAGE_KEY = "kanban-board-state";
 
 export const KanbanBoard = () => {
-  const [board, setBoard] = useState<BoardData>(() => initialData);
+  const [board, setBoard] = useState<BoardData>(() => {
+    if (typeof window === "undefined") return initialData;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : initialData;
+  });
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [editingCard, setEditingCard] = useState<Card | null>(null);
+
+  // Save to localStorage whenever board changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(board));
+  }, [board]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -89,6 +102,21 @@ export const KanbanBoard = () => {
     });
   };
 
+  const handleEditCard = (card: Card) => {
+    setEditingCard(card);
+  };
+
+  const handleSaveCard = (cardId: string, title: string, details: string) => {
+    setBoard((prev) => ({
+      ...prev,
+      cards: {
+        ...prev.cards,
+        [cardId]: { ...prev.cards[cardId], title, details },
+      },
+    }));
+    setEditingCard(null);
+  };
+
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
 
   return (
@@ -148,6 +176,7 @@ export const KanbanBoard = () => {
                 onRename={handleRenameColumn}
                 onAddCard={handleAddCard}
                 onDeleteCard={handleDeleteCard}
+                onEditCard={handleEditCard}
               />
             ))}
           </section>
@@ -160,6 +189,14 @@ export const KanbanBoard = () => {
           </DragOverlay>
         </DndContext>
       </main>
+
+      {editingCard && (
+        <CardEditModal
+          card={editingCard}
+          onSave={handleSaveCard}
+          onCancel={() => setEditingCard(null)}
+        />
+      )}
     </div>
   );
 };

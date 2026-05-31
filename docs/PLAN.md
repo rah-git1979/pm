@@ -78,7 +78,7 @@ Tasks:
 
 Tests and verification:
 - run `npm run build` successfully inside `frontend`
-- backend server serves the built app at `/`
+- backend server serves the built app from `frontend/out` at `/`
 - browser or automated request to `/` returns HTML containing `Kanban Studio`
 
 ## Phase 4: Fake user sign in experience
@@ -114,6 +114,22 @@ Proposed schema:
   - `board_json TEXT NOT NULL`
   - `updated_at TEXT NOT NULL`
 
+Database details:
+- DB file: `backend/kanban.db`
+- board JSON stored in `board_json`
+- timestamps stored as ISO 8601 UTC strings
+
+See `docs/DB_SCHEMA.md` for the full SQLite schema and board JSON format.
+
+Example SQL:
+```sql
+CREATE TABLE IF NOT EXISTS boards (
+  user_id TEXT PRIMARY KEY,
+  board_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+```
+
 Success criteria:
 - the schema is documented in `docs/`
 - the backend can create and open the database automatically
@@ -132,6 +148,7 @@ Tasks:
 
 Tests and verification:
 - backend tests for `GET /api/board` and `POST /api/board`
+- frontend smoke test for the backend `/api/board` endpoint (requires backend running on `http://127.0.0.1:8000`)
 - save/load roundtrip works for the same user
 - invalid board payloads return 4xx errors
 

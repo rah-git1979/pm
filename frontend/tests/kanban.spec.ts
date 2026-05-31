@@ -46,3 +46,15 @@ test("moves a card between columns", async ({ page }) => {
   await page.mouse.up();
   await expect(targetColumn.getByTestId("card-card-1")).toBeVisible();
 });
+
+test("smokes backend /api/board endpoint", async ({ request }) => {
+  const response = await request.get("http://127.0.0.1:8000/api/board");
+  expect(response.ok()).toBeTruthy();
+
+  const body = await response.json();
+  expect(body.userId).toBe("user");
+  expect(body.board).toBeDefined();
+  expect(Array.isArray(body.board.columns)).toBe(true);
+  expect(body.board.cards).toBeDefined();
+  expect(typeof body.updatedAt).toBe("string");
+});
