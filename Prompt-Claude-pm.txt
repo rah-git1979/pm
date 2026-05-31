@@ -1,0 +1,197 @@
+/init
+
+
+wirte claude.md
+1 - Yes
+2 - Yes Allow Edits (Shift + Tab)
+3 - Tab (Other)
+
+/context
+
+/compact
+
+read plan.md in docs folder to understand what has been built so far and any supporting docs
+
+please run all tests to confirm that everything is working, bringing up the server as needed, and bringing down the 
+  server at the end
+
+
+how can I test the app frmo my side?myself from browser?
+
+Option 1 — Frontend only (quickest)
+
+  Run from frontend/:
+  npm run dev
+  Then open http://127.0.0.1:3000 in your browser. Login with user / password. This gives you the full UI (login, board,
+  drag-drop, add/delete cards), but board state is not yet persisted to the backend (Phase 7 is still pending).
+
+  Option 2 — Full stack via Docker (closest to production)
+
+  From PowerShell at the project root:
+  ./scripts/start.ps1
+  Then open http://localhost:8000. This builds the static frontend and serves everything through FastAPI. Board state will
+  be read/written to the SQLite DB, but since the frontend isn't yet wired to call the API (Phase 7 pending), the board
+  still shows the hardcoded initialData.
+
+  Recommendation: Use Option 1 for now. It's faster to start and lets you test the UI. Once Phase 7 (frontend/backend
+  integration) is done, Option 2 will be the meaningful full-stack test.
+
+
+proceed with phase 7 activities
+share steps to check application in browser and what actions should I perform to test key functionalities?   
+Setup (two terminals)
+                                
+  Terminal 1 — backend (from project root):
+  uvicorn backend.app:app --port 8000 --reload
+--------------------
+if error- claude not recognized
+
+npm list -g @anthropic-ai/claude-code 2>/dev/null; echo "---"; where claude 2>/dev/null || echo "claude not in PATH"
+npm install -g @anthropic-ai/claude-code
+
+uvicorn not installed
+pip show uvicorn 2>/dev/null || echo "uvicorn not installed"; python -m uvicorn --version 2>/dev/null || echo "python -m uvicorn also fails"
+
+uvicorn is installed but not in PATH. Use python -m uvicorn instead:
+
+python -m uvicorn backend.app:app --port 8000 --reload
+This works because uvicorn is installed as a Python package but its script isn't registered in your system PATH. The -m flag runs it as a module directly through Python, which always works.
+
+
+
+Claude Code CLI isn't installed. Fix it with one command in PowerShell:
+
+
+npm install -g @anthropic-ai/claude-code
+After it finishes, verify it works:
+
+
+claude --version
+If you still get "not recognized" after install, close and reopen PowerShell (it needs to reload the PATH). That's all — the npm global install puts the claude command in your PATH automatically on Windows.
+
+how to fix:
+(base) PS D:\Rahul\Tech\VibeCoding\Claude\Projects\pm> uvicorn backend.app:app --port 8000 --reload
+At line:1 char:1
++ uvicorn backend.app:app --port 8000 --reload
++ ~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (uvicorn:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+Bash Check if uvicorn is installed
+IN
+pip show uvicorn 2>/dev/null || echo "uvicorn not installed"; python -m uvicorn --version 2>/dev/null || echo "python -m uvicorn also fails"
+
+OUT
+Name: uvicorn
+Version: 0.48.0
+Summary: The lightning-fast ASGI server.
+Home-page: https://uvicorn.dev/
+Author: 
+Author-email: Tom Christie <tom@tomchristie.com>
+License-Expression: BSD-3-Clause
+Location: C:\Users\Rahul\AppData\Roaming\Python\Python314\site-packages
+Requires: click, h11
+Required-by: 
+Running uvicorn 0.48.0 with CPython 3.14.4 on Windows
+uvicorn is installed but not in PATH. Use python -m uvicorn instead:
+
+
+python -m uvicorn backend.app:app --port 8000 --reload
+This works because uvicorn is installed as a Python package but its script isn't registered in your system PATH. The -m flag runs it as a module directly through Python, which always works.
+
+how to fix this
+(base) PS D:\Rahul\Tech\VibeCoding\Claude\Projects\pm> python -m uvicorn backend.app:app --port 8000 --reload
+C:\Users\Rahul\anaconda3\python.exe: No module named uvicorn
+Two Python installations are conflicting — python resolves to Anaconda's Python, but uvicorn is installed under Python 3.14. Simplest fix: install uvicorn in the Anaconda environment:
+
+
+pip install uvicorn
+Then retry:
+
+
+python -m uvicorn backend.app:app --port 8000 --reload
+You may also want to install all backend dependencies while you're at it:
+
+
+pip install -r backend/requirements.txt
+
+
+
+D:\Rahul\Tech\VibeCoding\Claude\Projects\pm\.venv\Scripts\python.exe -m uvicorn backend.app:app --port 8000 --reload
+
+
+
+----------------------
+
+
+  Terminal 2 — frontend (from frontend/):
+  npm run dev
+
+  Then open http://localhost:3000 in your browser.
+
+  ---
+  What to test
+
+  1. Login
+  - You should see the login form, not the board
+  - Enter user / password → board should appear with 5 columns and 8 cards
+  - Try a wrong password → expect an error message
+
+  2. Board loads from the backend (Phase 7 core)
+  - Open DevTools → Network tab → filter by /api/board
+  - Reload the page, sign in again → you should see a GET /api/board request returning 200 with your board data
+
+  3. Add a card and reload
+  - Click "Add a card" in any column → fill in a title → click "Add Card"
+  - Hard reload the page (Ctrl+Shift+R) → sign in again
+  - The new card should still be there (it was saved to the backend)
+
+  4. Drag a card between columns
+  - Drag any card from one column to another
+  - Hard reload → sign in → the card should be in its new column
+
+  5. Rename a column
+  - Click the column title to edit it → type a new name → press Enter or click away
+  - Hard reload → sign in → the new name should persist
+
+  6. Delete a card
+  - Hover over a card → click the delete button
+  - Hard reload → sign in → card should be gone
+
+  - Try a wrong password → expect an error message
+
+  2. Board loads from the backend (Phase 7 core)
+  - Open DevTools → Network tab → filter by /api/board
+  - Reload the page, sign in again → you should see a GET /api/board request returning 200 with your board
+  data
+
+  3. Add a card and reload
+  - Click "Add a card" in any column → fill in a title → click "Add Card"
+  - Hard reload the page (Ctrl+Shift+R) → sign in again
+  - The new card should still be there (it was saved to the backend)
+
+  4. Drag a card between columns
+  - Drag any card from one column to another
+  - Hard reload → sign in → the card should be in its new column
+
+  5. Rename a column
+  - Click the column title to edit it → type a new name → press Enter or click away
+  - Hard reload → sign in → the new name should persist
+
+  6. Delete a card
+  - Hover over a card → click the delete button
+  - Hard reload → sign in → card should be gone
+
+  7. Logout
+  - Click "Sign out" (top-right) → should return to the login screen
+  - The board should not be visible until you log in again
+
+
+
+
+
+
+git status
+git add .
+git config user.name "Rahul"
+git config user.email "rahul@example.com"
+git commit -m "Part 7 Complete"

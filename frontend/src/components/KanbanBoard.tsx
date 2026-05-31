@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -16,20 +16,50 @@ import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { CardEditModal } from "@/components/CardEditModal";
 import { createId, initialData, moveCard, type BoardData, type Card } from "@/lib/kanban";
 
-const STORAGE_KEY = "kanban-board-state";
+const fetchBoard = async (): Promise<BoardData> => {
+  try {
+    const res = await fetch("/api/board");
+    const data = await res.json();
+    if (data.board.columns.length === 0) {
+      await fetch("/api/board", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ board: initialData }),
+      });
+      return initialData;
+    }
+    return data.board;
+  } catch {
+    return initialData;
+  }
+};
+
+const saveBoard = (board: BoardData) => {
+  fetch("/api/board", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ board }),
+  }).catch(() => {});
+};
 
 export const KanbanBoard = () => {
-  const [board, setBoard] = useState<BoardData>(() => {
-    if (typeof window === "undefined") return initialData;
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : initialData;
-  });
+  const [board, setBoard] = useState<BoardData>(initialData);
+  const [loading, setLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const loaded = useRef(false);
 
-  // Save to localStorage whenever board changes
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(board));
+    fetchBoard().then((data) => {
+      setBoard(data);
+      setLoading(false);
+      loaded.current = true;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!loaded.current) return;
+    saveBoard(board);
   }, [board]);
 
   const sensors = useSensors(
@@ -118,6 +148,14 @@ export const KanbanBoard = () => {
   };
 
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-[var(--gray-text)]">Loading board...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden">
