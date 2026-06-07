@@ -89,7 +89,7 @@ SAMPLE_BOARD_UPDATE = {
 def test_ai_chat_returns_message_without_board_update(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     ai_reply = json.dumps({"message": "You have 5 columns.", "boardUpdate": None})
-    with patch("httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
+    with patch("backend.app.httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
         response = client.post("/api/ai/chat", json={"message": "How many columns do I have?"})
     assert response.status_code == 200
     data = response.json()
@@ -100,7 +100,7 @@ def test_ai_chat_returns_message_without_board_update(monkeypatch):
 def test_ai_chat_returns_board_update_and_saves(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     ai_reply = json.dumps({"message": "Added New task.", "boardUpdate": SAMPLE_BOARD_UPDATE})
-    with patch("httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
+    with patch("backend.app.httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
         response = client.post("/api/ai/chat", json={"message": "Add a card called New task"})
     assert response.status_code == 200
     data = response.json()
@@ -115,7 +115,7 @@ def test_ai_chat_returns_board_update_and_saves(monkeypatch):
 def test_ai_chat_ignores_invalid_board_update(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     ai_reply = json.dumps({"message": "Done.", "boardUpdate": {"bad": "data"}})
-    with patch("httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
+    with patch("backend.app.httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
         response = client.post("/api/ai/chat", json={"message": "Do something"})
     assert response.status_code == 200
     assert response.json()["boardUpdate"] is None
@@ -124,7 +124,7 @@ def test_ai_chat_ignores_invalid_board_update(monkeypatch):
 def test_ai_chat_handles_markdown_wrapped_json(monkeypatch):
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
     ai_reply = "```json\n" + json.dumps({"message": "Got it.", "boardUpdate": None}) + "\n```"
-    with patch("httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
+    with patch("backend.app.httpx.AsyncClient", return_value=_mock_openrouter(ai_reply)):
         response = client.post("/api/ai/chat", json={"message": "Hello"})
     assert response.status_code == 200
     assert response.json()["message"] == "Got it."

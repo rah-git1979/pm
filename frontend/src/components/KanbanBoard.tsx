@@ -14,6 +14,7 @@ import {
 import { KanbanColumn } from "@/components/KanbanColumn";
 import { KanbanCardPreview } from "@/components/KanbanCardPreview";
 import { CardEditModal } from "@/components/CardEditModal";
+import { AISidebar } from "@/components/AISidebar";
 import { createId, initialData, moveCard, type BoardData, type Card } from "@/lib/kanban";
 
 const fetchBoard = async (): Promise<BoardData> => {
@@ -47,6 +48,7 @@ export const KanbanBoard = () => {
   const [loading, setLoading] = useState(true);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [editingCard, setEditingCard] = useState<Card | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const loaded = useRef(false);
 
   useEffect(() => {
@@ -177,13 +179,27 @@ export const KanbanBoard = () => {
                 and capture quick notes without getting buried in settings.
               </p>
             </div>
-            <div className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
-                Focus
-              </p>
-              <p className="mt-2 text-lg font-semibold text-[var(--primary-blue)]">
-                One board. Five columns. Zero clutter.
-              </p>
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
+                  Focus
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[var(--primary-blue)]">
+                  One board. Five columns. Zero clutter.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen((o) => !o)}
+                className="rounded-2xl border border-[var(--stroke)] bg-[var(--surface)] px-5 py-4 text-left transition hover:border-[var(--secondary-purple)] hover:bg-white"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--gray-text)]">
+                  AI Assistant
+                </p>
+                <p className="mt-2 text-lg font-semibold text-[var(--secondary-purple)]">
+                  {sidebarOpen ? "Close chat" : "Open chat"}
+                </p>
+              </button>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
@@ -233,6 +249,13 @@ export const KanbanBoard = () => {
           card={editingCard}
           onSave={handleSaveCard}
           onCancel={() => setEditingCard(null)}
+        />
+      )}
+
+      {sidebarOpen && (
+        <AISidebar
+          onBoardUpdate={(updated) => setBoard((prev) => ({ ...prev, ...updated }))}
+          onClose={() => setSidebarOpen(false)}
         />
       )}
     </div>

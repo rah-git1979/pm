@@ -5,7 +5,7 @@ from pathlib import Path
 import sqlite3
 
 from dotenv import load_dotenv
-import httpx
+import httpx2 as httpx
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

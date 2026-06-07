@@ -162,30 +162,30 @@ Tests and verification:
 - reload restores the same board state ✅
 - 21 total tests passing (6 backend + 8 unit + 7 E2E) ✅
 
-## Phase 8: AI connectivity
+## Phase 8: AI connectivity ✅
 
 Goal: enable the backend to call OpenRouter and validate the connection.
 
 Tasks:
-- [ ] Add a backend AI route, such as `POST /api/ai/chat`
-- [ ] Configure the backend to use `OPENROUTER_API_KEY` from `.env`
-- [ ] Implement a simple API call to OpenRouter and return the response
-- [ ] Validate the connection with a primitive test prompt such as `2+2`
+- [x] Add a backend AI route, such as `POST /api/ai/chat`
+- [x] Configure the backend to use `OPENROUTER_API_KEY` from `.env`
+- [x] Implement a simple API call to OpenRouter and return the response
+- [x] Validate the connection with a primitive test prompt such as `2+2`
 
 Tests and verification:
 - backend test verifies the AI request pipeline can be invoked
 - the OpenRouter route returns a valid AI response
 - errors are surfaced clearly if the API key is missing or invalid
 
-## Phase 9: Structured output and board updates
+## Phase 9: Structured output and board updates ✅
 
 Goal: make the AI return structured output that can optionally update the board.
 
 Tasks:
-- [ ] Define a minimal structured response format with fields for `message` and optional `boardUpdate`
-- [ ] Ensure the backend sends the current board JSON and user query to the AI
-- [ ] Parse the AI response and detect if a board update is included
-- [ ] Apply safe board updates if the structure is valid
+- [x] Define a minimal structured response format with fields for `message` and optional `boardUpdate`
+- [x] Ensure the backend sends the current board JSON and user query to the AI
+- [x] Parse the AI response and detect if a board update is included
+- [x] Apply safe board updates if the structure is valid
 
 Suggested structured response format:
 ```json
@@ -203,16 +203,16 @@ Tests and verification:
 - `boardUpdate` is accepted only when valid
 - the UI can refresh board state when AI changes are applied
 
-## Phase 10: AI chat UI
+## Phase 10: AI chat UI ✅
 
 Goal: add a sidebar chat experience that lets the AI update the Kanban board.
 
 Tasks:
-- [ ] Add a sidebar chat component in the frontend
-- [ ] Allow users to send questions or instructions to the AI
-- [ ] Send the current board JSON and conversation context to the backend AI route
-- [ ] Display the AI response text in the UI
-- [ ] If the AI returns `boardUpdate`, refresh the board automatically
+- [x] Add a sidebar chat component in the frontend (`AISidebar.tsx`)
+- [x] Allow users to send questions or instructions to the AI
+- [x] Send the current board JSON and conversation context to the backend AI route
+- [x] Display the AI response text in the UI
+- [x] If the AI returns `boardUpdate`, refresh the board automatically
 
 Tests and verification:
 - sidebar sends messages to the backend AI route
@@ -223,6 +223,6 @@ Tests and verification:
 ## Review and handoff
 
 - [x] Confirm the plan with the user before coding
-- [ ] Keep the implementation minimal and focused on the MVP scope
-- [ ] Avoid extra features beyond sign-in, persistence, and AI-driven board updates
-- [ ] Use clear tests for each milestone
+- [x] Keep the implementation minimal and focused on the MVP scope
+- [x] Avoid extra features beyond sign-in, persistence, and AI-driven board updates
+- [x] Use clear tests for each milestone

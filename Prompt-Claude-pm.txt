@@ -220,4 +220,135 @@ What is actually happening?The Problem: By default, Git uses OpenSSL, which reli
 
 proceed with phase 9. list the tasks getting executed and cross out those which gets  completed.
 
+git status
+git add .
+--git config user.name "Rahul"
+--git config user.email "rahul@example.com"
+git commit -m "Part 9 Complete"
+git push -u origin main
+
+❯ proceed with phase 10
+
+
+/context
+/compact
+
+yes and run all tests to validate if application is working fine. check the outcome and confirm
+
+How do I test the application from browser?
+
+You need two terminals running simultaneously for the full-stack experience (UI + AI sidebar):
+                                
+  Terminal 1 — Backend (from project root D:\Rahul\Tech\VibeCoding\Claude\Projects\pm):
+  .venv\Scripts\uvicorn backend.app:app --port 8000 --reload
+
+  Terminal 2 — Frontend (from frontend\):
+  npm run dev
+
+  Then open http://127.0.0.1:3000 in your browser.
+
+  ---
+  What to test:
+
+  1. Login — enter user / password, click Sign In
+  2. Add a card — click "Add a card" in any column, fill title + details, submit
+  3. Edit a card — click a card to open the edit modal, change title/details, save
+  4. Drag a card — drag a card to a different column
+  5. Rename a column — click the column title input, change it, click elsewhere
+  6. Persist across reload — make changes, reload the page, confirm they're still there
+  7. AI sidebar — click "Open chat" in the top-right, then try:
+    - "How many cards are in Backlog?" (read-only query)
+    - "Add a card called Deploy v1 to the Done column" (board update)
+    - Confirm the board updates automatically when AI returns a change
+  8. Logout — click Logout (top-right), confirm you're returned to the login screen
+
+  For the AI to work, ensure you have an OPENROUTER_API_KEY set in a .env file at the project root:
+  OPENROUTER_API_KEY=your-key-here
+
+✻ Worked for 14s
+
+❯ npm run dev                                                                                                             
+
+● Bash(npm run dev 2>&1 &)
+  ⎿  Running in the background (↓ to manage)
+
+● Bash(sleep 5 && cat "C:\Users\Rahul\AppData\Local\Temp\claude\D--Rahul-Tech-VibeCoding-Claude-Projects-pm\b114ddf3-56c9-
+      4c77-9f96-0a405735f70f\tasks\bhok8zoeq.output…)
+  ⎿  > frontend@0.1.0 dev
+     > next dev
+     … +6 lines (ctrl+o to expand)
+
+● Background command "Start Next.js dev server in background" completed (exit code 0)
+
+  What to test:
+
+  1. Login — enter user / password, click Sign In
+  2. Add a card — click "Add a card" in any column, fill title + details, submit
+  3. Edit a card — click a card to open the edit modal, change title/details, save
+  4. Drag a card — drag a card to a different column
+  5. Rename a column — click the column title input, change it, click elsewhere
+  6. Persist across reload — make changes, reload the page, confirm they're still there
+  7. AI sidebar — click "Open chat" in the top-right, then try:
+    - "How many cards are in Backlog?" (read-only query)
+    - "Add a card called Deploy v1 to the Done column" (board update)
+    - Confirm the board updates automatically when AI returns a change
+  8. Logout — click Logout (top-right), confirm you're returned to the login screen
+
+  For the AI to work, ensure you have an OPENROUTER_API_KEY set in a .env file at the project root:
+  OPENROUTER_API_KEY=your-key-here
+
+✻ Worked for 14s
+
+❯ npm run dev                                                                                       
+
+● Bash(npm run dev 2>&1 &)
+  ⎿  Running in the background (↓ to manage)
+
+● Bash(sleep 5 && cat "C:\Users\Rahul\AppData\Local\Temp\claude\D--Rahul-Tech-VibeCoding-Claude-Proj
+      ects-pm\b114ddf3-56c9-4c77-9f96-0a405735f70f\tasks\bhok8zoeq.output…)
+  ⎿  > frontend@0.1.0 dev
+     > next dev
+     … +6 lines (ctrl+o to expand)
+
+● Background command "Start Next.js dev server in background" completed (exit code 0)
+
+● The dev server started and was ready in under 1 second. Open http://localhost:3000 in your
+  browser.
+
+  You'll see the login screen — use user / password to sign in.
+
+  Note: the frontend is running alone right now, so board saves will fail silently (no backend). To
+  also get persistence and the AI sidebar working, start the backend in a separate terminal from the
+  project root:
+
+  .venv\Scripts\uvicorn backend.app:app --port 8000 --reload
+
+Stop Front end:
+Frontend is still running — got a 200 response on port 3000. Ctrl+C may not have stopped it, or it
+  was restarted. To stop it, press Ctrl+C in that terminal again (sometimes needs two presses), or
+  run:
+
+  npx kill-port 3000
+
+Stop Back end:
+
+Verify Docker:
+- Docker hasn't been verified end-to-end with the AI sidebar in place. Would need npm run
+  build:static then ./scripts/start.ps1 to confirm.
+
+One finding to flag while we wait: start.ps1 doesn't pass OPENROUTER_API_KEY to the container, so
+  the AI sidebar will return a 500 error in Docker. The fix is to add --env-file .env to the docker
+  run command:
+
+  docker run -d --name $containerName -p 8000:8000 --env-file ../.env pm-mvp
+
+anything else to verify, fix or test? 
+
+git status
+git add .
+--git config user.name "Rahul"
+--git config user.email "rahul@example.com"
+git commit -m "Part 9 Complete"
+git push -u origin main
+
 
