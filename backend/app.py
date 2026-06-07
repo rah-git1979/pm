@@ -130,6 +130,58 @@ async def post_board(board_payload: dict = Body(...)):
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_MODEL = "openai/gpt-oss-120b"
 
+SYSTEM_PROMPT = """You are a Kanban board assistant. You help users manage their board by answering questions and making changes when asked.
+
+Always respond with valid JSON in exactly this format:
+{
+  "message": "Your response to the user",
+  "boardUpdate": null
+}
+
+If the user asks you to modify the board (add, move, delete, or rename cards or columns), include the complete updated board in boardUpdate:
+{
+  "message": "Description of what you changed",
+  "boardUpdate": {
+    "columns": [{"id": "...", "title": "...", "cardIds": ["..."]}],
+    "cards": {"card-id": {"id": "...", "title": "...", "details": "..."}}
+  }
+}
+
+Rules:
+- boardUpdate must contain ALL columns and ALL cards, not just the changed ones
+- Preserve existing IDs for existing items
+- For new cards generate an id like "card-xyz123" (short random suffix)
+- Only include boardUpdate when the user explicitly requests a board change
+- Never include boardUpdate for read-only questions"""
+
+
+def _is_valid_board_update(board_update: dict) -> bool:
+    if not isinstance(board_update, dict):
+        return False
+    columns = board_update.get("columns")
+    cards = board_update.get("cards")
+    if not isinstance(columns, list) or not isinstance(cards, dict):
+        return False
+    for col in columns:
+        if not all(k in col for k in ("id", "title", "cardIds")):
+            return False
+        if not isinstance(col["cardIds"], list):
+            return False
+    for card in cards.values():
+        if not all(k in card for k in ("id", "title", "details")):
+            return False
+    return True
+
+
+def _parse_ai_response(raw: str) -> dict:
+    # Strip markdown code fences if present
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+    return json.loads(text.strip())
+
 
 @app.post("/api/ai/chat")
 async def ai_chat(payload: dict = Body(...)):
@@ -141,21 +193,44 @@ async def ai_chat(payload: dict = Body(...)):
     if not api_key:
         raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured")
 
+    user_id = "user"
+    board_doc = get_board_for_user(user_id) or get_default_board(user_id)
+    board_context = json.dumps(board_doc["board"], indent=2)
+
+    system_with_board = f"{SYSTEM_PROMPT}\n\nCurrent board:\n{board_context}"
+
     async with httpx.AsyncClient(verify=False) as client:
         response = await client.post(
             OPENROUTER_URL,
             headers={"Authorization": f"Bearer {api_key}"},
             json={
                 "model": OPENROUTER_MODEL,
-                "messages": [{"role": "user", "content": message}],
+                "messages": [
+                    {"role": "system", "content": system_with_board},
+                    {"role": "user", "content": message},
+                ],
             },
             timeout=30.0,
         )
         response.raise_for_status()
 
-    data = response.json()
-    reply = data["choices"][0]["message"]["content"]
-    return {"reply": reply}
+    raw = response.json()["choices"][0]["message"]["content"]
+
+    try:
+        parsed = _parse_ai_response(raw)
+        reply_message = parsed.get("message", raw)
+        board_update = parsed.get("boardUpdate")
+    except (json.JSONDecodeError, KeyError):
+        reply_message = raw
+        board_update = None
+
+    if board_update is not None:
+        if _is_valid_board_update(board_update):
+            save_board_for_user(user_id, {"board": board_update})
+        else:
+            board_update = None
+
+    return {"message": reply_message, "boardUpdate": board_update}
 
 
 frontend_build_dir = Path(__file__).parent.parent / "frontend" / "out"

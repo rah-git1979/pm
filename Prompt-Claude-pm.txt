@@ -187,18 +187,36 @@ D:\Rahul\Tech\VibeCoding\Claude\Projects\pm\.venv\Scripts\python.exe -m uvicorn 
 
 
 
-
-
+proceed with phase 8 activities
 
 git status
 git add .
-git config user.name "Rahul"
-git config user.email "rahul@example.com"
-git commit -m "Part 7 Complete"
+--git config user.name "Rahul"
+--git config user.email "rahul@example.com"
+git commit -m "Part 8 Complete"
 
 
+Rename your default branch to main (recommended by GitHub):bash
+git branch -M main
 
-proceed with phase 8 activities
+Link your local repository to GitHub:bash
+git remote add origin <https://github.com/rah-git1979/pm.git>
+
+ Origin already exists pointing to ed-donner/pm.git. To update it to your repo:
+
+  git remote set-url origin https://github.com/rah-git1979/pm.git
+
+
+Push your code to GitHub:bash
+git push -u origin main
+
+
+cd "D:/Rahul/Tech/VibeCoding/Claude/Projects/pm" && git config --global http.sslBackend
+   schannel && git push -u origin main
+   Set git SSL backend to Windows schannel and push
+
+What is actually happening?The Problem: By default, Git uses OpenSSL, which relies on a standalone file (ca-bundle.crt) to verify website certificates. If your company uses a firewall or proxy that intercepts traffic (TLS Inspection) using custom certificates, OpenSSL won't recognize them and will block your git push with an error like SSL certificate problem: unable to get local issuer certificate.The Solution (SChannel): SChannel is the native Windows encryption layer. When you tell Git to use it, Git automatically trusts the exact same company security certificates that your IT department has pre-installed into your Windows operating system.
+
 
 proceed with phase 9. list the tasks getting executed and cross out those which gets  completed.
 
