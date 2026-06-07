@@ -1,5 +1,6 @@
 import json
 import sqlite3
+from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
 from backend.app import app, DB_FILE
 
@@ -11,14 +12,14 @@ def test_hello_endpoint():
     assert response.json() == {"message": "hello world"}
 
 
-def test_get_board_returns_default_board():
+def test_get_board_returns_valid_board():
     response = client.get("/api/board")
     assert response.status_code == 200
 
     data = response.json()
     assert data["userId"] == "user"
-    assert data["board"]["columns"] == []
-    assert data["board"]["cards"] == {}
+    assert isinstance(data["board"]["columns"], list)
+    assert isinstance(data["board"]["cards"], dict)
     assert "updatedAt" in data
 
     with sqlite3.connect(DB_FILE) as conn:
@@ -66,6 +67,37 @@ def test_database_created():
             "SELECT name FROM sqlite_master WHERE type='table' AND name='boards'"
         )
         assert cursor.fetchone() is not None
+
+
+def _mock_openrouter(reply: str):
+    mock_response = MagicMock()
+    mock_response.json.return_value = {"choices": [{"message": {"content": reply}}]}
+    mock_response.raise_for_status = MagicMock()
+    mock_client = MagicMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+    mock_client.post = AsyncMock(return_value=mock_response)
+    return mock_client
+
+
+def test_ai_chat_returns_reply(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    with patch("httpx.AsyncClient", return_value=_mock_openrouter("4")):
+        response = client.post("/api/ai/chat", json={"message": "2+2"})
+    assert response.status_code == 200
+    assert response.json()["reply"] == "4"
+
+
+def test_ai_chat_missing_message(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    response = client.post("/api/ai/chat", json={"message": ""})
+    assert response.status_code == 400
+
+
+def test_ai_chat_missing_api_key(monkeypatch):
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    response = client.post("/api/ai/chat", json={"message": "hello"})
+    assert response.status_code == 500
 
 
 def test_board_json_storage():

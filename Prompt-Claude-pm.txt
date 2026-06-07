@@ -195,3 +195,11 @@ git add .
 git config user.name "Rahul"
 git config user.email "rahul@example.com"
 git commit -m "Part 7 Complete"
+
+
+
+proceed with phase 8 activities
+
+proceed with phase 9. list the tasks getting executed and cross out those which gets  completed.
+
+

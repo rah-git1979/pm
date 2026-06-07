@@ -1,11 +1,16 @@
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import sqlite3
 
+from dotenv import load_dotenv
+import httpx
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 app = FastAPI()
 app.add_middleware(
@@ -120,6 +125,37 @@ async def post_board(board_payload: dict = Body(...)):
     user_id = "user"
     saved = save_board_for_user(user_id, board_payload)
     return saved
+
+
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_MODEL = "openai/gpt-oss-120b"
+
+
+@app.post("/api/ai/chat")
+async def ai_chat(payload: dict = Body(...)):
+    message = payload.get("message", "").strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="message is required")
+
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured")
+
+    async with httpx.AsyncClient(verify=False) as client:
+        response = await client.post(
+            OPENROUTER_URL,
+            headers={"Authorization": f"Bearer {api_key}"},
+            json={
+                "model": OPENROUTER_MODEL,
+                "messages": [{"role": "user", "content": message}],
+            },
+            timeout=30.0,
+        )
+        response.raise_for_status()
+
+    data = response.json()
+    reply = data["choices"][0]["message"]["content"]
+    return {"reply": reply}
 
 
 frontend_build_dir = Path(__file__).parent.parent / "frontend" / "out"

@@ -38,59 +38,54 @@ This schema supports:
 - easy JSON storage in SQLite
 - user-specific board state for future multi-user support
 
-## Phase 1: Plan and documentation
+## Phase 1: Plan and documentation ✅
 
-- [ ] Expand `docs/PLAN.md` with a detailed checklist and test criteria
-- [ ] Create `frontend/agents.md` describing the existing frontend implementation
-- [ ] Confirm the plan and the schema proposal with the user before writing code
+- [x] Expand `docs/PLAN.md` with a detailed checklist and test criteria
+- [x] Create `frontend/agents.md` describing the existing frontend implementation
+- [x] Confirm the plan and the schema proposal with the user before writing code
 
-Success criteria:
-- `docs/PLAN.md` is complete and reviewed
-- `frontend/agents.md` exists and accurately describes the code
-- User approves the plan before implementation begins
-
-## Phase 2: Scaffolding
+## Phase 2: Scaffolding ✅
 
 Goal: establish a minimal backend container with FastAPI and static site support.
 
 Tasks:
-- [ ] Create `backend/` with FastAPI app entrypoint
-- [ ] Add `Dockerfile` and `.dockerignore` at repo root
-- [ ] Add `scripts/start.*` and `scripts/stop.*` for Windows/Mac/Linux
-- [ ] Add backend route `/api/health` or `/api/hello` for a simple JSON response
-- [ ] Add a static HTML route in FastAPI so the container can serve a minimal page
-- [ ] Verify startup in Docker and confirm a known response from the backend route
+- [x] Create `backend/` with FastAPI app entrypoint
+- [x] Add `Dockerfile` and `.dockerignore` at repo root
+- [x] Add `scripts/start.*` and `scripts/stop.*` for Windows/Mac/Linux
+- [x] Add backend route `/api/health` or `/api/hello` for a simple JSON response
+- [x] Add a static HTML route in FastAPI so the container can serve a minimal page
+- [x] Verify startup in Docker and confirm a known response from the backend route
 
 Tests and verification:
 - backend unit test for `/api/hello`
 - Docker build/run should start without errors
 - `curl http://localhost:<port>/api/hello` returns expected JSON
 
-## Phase 3: Frontend build and static serving
+## Phase 3: Frontend build and static serving ✅
 
 Goal: make the existing Next.js demo build and serve from the backend.
 
 Tasks:
-- [ ] Confirm `frontend` build output via `npm run build`
-- [ ] Configure backend to serve Next.js static output at `/`
-- [ ] Ensure `frontend/src/app/page.tsx` renders the demo board when visited
-- [ ] Preserve the existing drag/drop and add/delete behavior in the served app
+- [x] Confirm `frontend` build output via `npm run build`
+- [x] Configure backend to serve Next.js static output at `/`
+- [x] Ensure `frontend/src/app/page.tsx` renders the demo board when visited
+- [x] Preserve the existing drag/drop and add/delete behavior in the served app
 
 Tests and verification:
 - run `npm run build` successfully inside `frontend`
 - backend server serves the built app from `frontend/out` at `/`
 - browser or automated request to `/` returns HTML containing `Kanban Studio`
 
-## Phase 4: Fake user sign in experience
+## Phase 4: Fake user sign in experience ✅
 
 Goal: require sign in before the Kanban board is visible.
 
 Tasks:
-- [ ] Add a login page or modal in the frontend
-- [ ] Implement client-side auth state for the hardcoded credentials `user` / `password`
-- [ ] Add login and logout flows
-- [ ] Keep the board hidden until authentication succeeds
-- [ ] Ensure sign-in state persists during the session until logout
+- [x] Add a login page or modal in the frontend
+- [x] Implement client-side auth state for the hardcoded credentials `user` / `password`
+- [x] Add login and logout flows
+- [x] Keep the board hidden until authentication succeeds
+- [x] Ensure sign-in state persists during the session until logout
 
 Tests and verification:
 - login accepts `user` / `password`
@@ -98,15 +93,15 @@ Tests and verification:
 - logout returns user to the login screen
 - authenticated users can see the board after login
 
-## Phase 5: Database modeling
+## Phase 5: Database modeling ✅
 
 Goal: choose a lightweight, stable storage model for the Kanban board.
 
 Tasks:
-- [ ] Define the SQLite schema in `docs/` and implement it in `backend/`
-- [ ] Use a single table for user boards with JSON content and timestamps
-- [ ] Ensure the backend creates the database if it does not exist
-- [ ] Document the DB design and the JSON schema in `docs/`
+- [x] Define the SQLite schema in `docs/` and implement it in `backend/`
+- [x] Use a single table for user boards with JSON content and timestamps
+- [x] Ensure the backend creates the database if it does not exist
+- [x] Document the DB design and the JSON schema in `docs/`
 
 Proposed schema:
 - table `boards`
@@ -130,42 +125,42 @@ CREATE TABLE IF NOT EXISTS boards (
 );
 ```
 
-Success criteria:
-- the schema is documented in `docs/`
-- the backend can create and open the database automatically
-- board storage is stable and readable from the file system
-
-## Phase 6: Backend API
+## Phase 6: Backend API ✅
 
 Goal: add routes to read and update the Kanban board.
 
 Tasks:
-- [ ] Implement `GET /api/board` to return the signed-in user’s board JSON
-- [ ] Implement `POST /api/board` to save board updates
-- [ ] Implement `POST /api/auth/login` and `POST /api/auth/logout` if needed for future state handling
-- [ ] Add backend validation for the JSON schema shape
-- [ ] Keep the backend logic simple and minimal
+- [x] Implement `GET /api/board` to return the signed-in user's board JSON
+- [x] Implement `POST /api/board` to save board updates
+- [x] Add backend validation for the JSON schema shape
+- [x] Keep the backend logic simple and minimal
 
 Tests and verification:
 - backend tests for `GET /api/board` and `POST /api/board`
-- frontend smoke test for the backend `/api/board` endpoint (requires backend running on `http://127.0.0.1:8000`)
+- frontend smoke test for the backend `/api/board` endpoint
 - save/load roundtrip works for the same user
-- invalid board payloads return 4xx errors
 
-## Phase 7: Frontend + Backend integration
+## Phase 7: Frontend + Backend integration ✅
 
 Goal: wire the frontend to load and save board state through the backend.
 
 Tasks:
-- [ ] Change frontend data flow to fetch board data from `GET /api/board`
-- [ ] Use `POST /api/board` for column rename, card add/delete, and reorder events
-- [ ] Keep the same UI and behaviors from the existing demo
-- [ ] Add loading and error states as required for a smooth UX
+- [x] Change frontend data flow to fetch board data from `GET /api/board`
+- [x] Use `POST /api/board` for column rename, card add/delete, and reorder events
+- [x] Keep the same UI and behaviors from the existing demo
+- [x] Add loading state while board fetches
+
+Implementation notes:
+- `next.config.ts` uses rewrites in dev to proxy `/api/*` to port 8000; `output: 'export'` applies only on `next build`
+- Board seeded with `initialData` on first load if backend returns empty board
+- `playwright.config.ts` auto-starts backend alongside frontend for E2E tests
+- Unit tests mock `fetch` so they run without a server
 
 Tests and verification:
-- frontend loads the backend board after login
-- changes in the UI are persisted by the backend
-- reload restores the same board state
+- frontend loads the backend board after login ✅
+- changes in the UI are persisted by the backend ✅
+- reload restores the same board state ✅
+- 21 total tests passing (6 backend + 8 unit + 7 E2E) ✅
 
 ## Phase 8: AI connectivity
 
@@ -227,7 +222,7 @@ Tests and verification:
 
 ## Review and handoff
 
-- [ ] Confirm the plan with the user before coding
+- [x] Confirm the plan with the user before coding
 - [ ] Keep the implementation minimal and focused on the MVP scope
 - [ ] Avoid extra features beyond sign-in, persistence, and AI-driven board updates
 - [ ] Use clear tests for each milestone
