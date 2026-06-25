@@ -4,8 +4,11 @@ import os
 from pathlib import Path
 import sqlite3
 
+import certifi
 from dotenv import load_dotenv
-import httpx2 as httpx
+import httpx
+import truststore
+truststore.inject_into_ssl()
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 DB_FILE = Path(__file__).parent / "kanban.db"
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def create_database() -> None:
@@ -47,7 +54,7 @@ def get_default_board(user_id: str) -> dict:
     return {
         "userId": user_id,
         "board": {"columns": [], "cards": {}},
-        "updatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "updatedAt": utc_now(),
     }
 
 
@@ -68,7 +75,7 @@ def get_board_for_user(user_id: str) -> dict | None:
             updated = True
 
         if "updatedAt" not in board:
-            board["updatedAt"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            board["updatedAt"] = utc_now()
             updated = True
 
         if updated:
@@ -79,7 +86,7 @@ def get_board_for_user(user_id: str) -> dict | None:
 
 def save_board_for_user(user_id: str, board_data: dict) -> dict:
     board_data["userId"] = board_data.get("userId") or user_id
-    board_data["updatedAt"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    board_data["updatedAt"] = utc_now()
     board_json = json.dumps(board_data)
 
     with get_db_connection() as conn:
@@ -199,7 +206,7 @@ async def ai_chat(payload: dict = Body(...)):
 
     system_with_board = f"{SYSTEM_PROMPT}\n\nCurrent board:\n{board_context}"
 
-    async with httpx.AsyncClient(verify=False) as client:
+    async with httpx.AsyncClient() as client:
         response = await client.post(
             OPENROUTER_URL,
             headers={"Authorization": f"Bearer {api_key}"},

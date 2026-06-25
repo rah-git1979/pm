@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -70,8 +70,6 @@ export const KanbanBoard = () => {
     })
   );
 
-  const cardsById = useMemo(() => board.cards, [board.cards]);
-
   const handleDragStart = (event: DragStartEvent) => {
     setActiveCardId(event.active.id as string);
   };
@@ -117,17 +115,14 @@ export const KanbanBoard = () => {
 
   const handleDeleteCard = (columnId: string, cardId: string) => {
     setBoard((prev) => {
+      const remainingCards = { ...prev.cards };
+      delete remainingCards[cardId];
       return {
         ...prev,
-        cards: Object.fromEntries(
-          Object.entries(prev.cards).filter(([id]) => id !== cardId)
-        ),
+        cards: remainingCards,
         columns: prev.columns.map((column) =>
           column.id === columnId
-            ? {
-                ...column,
-                cardIds: column.cardIds.filter((id) => id !== cardId),
-              }
+            ? { ...column, cardIds: column.cardIds.filter((id) => id !== cardId) }
             : column
         ),
       };
@@ -149,7 +144,7 @@ export const KanbanBoard = () => {
     setEditingCard(null);
   };
 
-  const activeCard = activeCardId ? cardsById[activeCardId] : null;
+  const activeCard = activeCardId ? board.cards[activeCardId] : null;
 
   if (loading) {
     return (

@@ -5,11 +5,11 @@ import { FormEvent, useState } from "react";
 const validUsername = "user";
 const validPassword = "password";
 
-export function LoginPanel({
-  onSuccess,
-}: {
+type LoginPanelProps = {
   onSuccess: () => void;
-}) {
+};
+
+export const LoginPanel = ({ onSuccess }: LoginPanelProps) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -85,4 +85,4 @@ export function LoginPanel({
       </div>
     </div>
   );
-}
+};
